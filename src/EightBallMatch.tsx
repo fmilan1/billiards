@@ -36,7 +36,7 @@ const EightBallMatch = () => {
     const [player1balls, setPlayer1balls] = useState<'stripes' | 'solids'>();
 
     useEffect(() => {
-        const id = searchParams.get('id');
+        const id = searchParams.get('matchID');
         if (id) {
             setId(id);
             const unsubscribeMatch = onSnapshot(doc(db, 'matches', id), snapshot => {
