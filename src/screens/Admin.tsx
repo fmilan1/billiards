@@ -395,8 +395,8 @@ export const Admin = () => {
 
     if (!matchID) {
         return (
-            <div>
-                <h1>8 ball meccsek</h1>
+            <div className="maincontainer">
+                <h1>8-ball meccsek</h1>
                 {matches.map((m, idx) => (
                     <div key={idx} className="match-container"
                         onClick={() => {
@@ -408,9 +408,7 @@ export const Admin = () => {
                         }}
                     >
                         <div>{m.player1}</div>
-                        <div>{m.score1}</div>
-                        <div>race to {m.raceTo}</div>
-                        <div>{m.score2}</div>
+                        vs
                         <div>{m.player2}</div>
                     </div>
                 ))}

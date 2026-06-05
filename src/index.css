@@ -420,9 +420,9 @@ button:disabled {
 
 .match-container {
     display: flex;
-    gap: 15px;
+    gap: 5px;
     box-shadow: 0 0 3px 0;
-    width: max-content;
-    padding: 20px;
+    padding: 10px;
+    justify-content: center;
     border-radius: 7px;
 }
