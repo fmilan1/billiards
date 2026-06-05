@@ -59,14 +59,18 @@ export const Admin = () => {
 
 
         const increaseScore1 = () => {
+            const newScore = match.score1 + 1;
+            if (newScore >= match.raceTo) return;
             updateDoc(doc(db, 'matches', matchID), {
-                score1: match?.score1 + 1,
+                score1: newScore,
             });
         }
 
         const decreaseScore1 = () => {
+            const newScore = match.score1 - 1;
+            if (newScore < 0) return;
             updateDoc(doc(db, 'matches', matchID), {
-                score1: match?.score1 - 1,
+                score1: newScore,
             });
         }
 
@@ -92,14 +96,18 @@ export const Admin = () => {
         }
 
         const increaseScore2 = () => {
+            const newScore = match.score2 + 1;
+            if (newScore >= match.raceTo) return;
             updateDoc(doc(db, 'matches', matchID), {
-                score2: match?.score2 + 1,
+                score2: newScore,
             });
         }
 
         const decreaseScore2 = () => {
+            const newScore = match.score2 - 1;
+            if (newScore < 0) return;
             updateDoc(doc(db, 'matches', matchID), {
-                score2: match?.score2 - 1,
+                score2: newScore,
             });
         }
 
@@ -146,6 +154,15 @@ export const Admin = () => {
             updateDoc(doc(db, 'matches', matchID), {
                 foulsToLose: match.foulsToLose - 1,
             });
+        }
+
+        const handlePotFromStart = () => {
+            updateDoc(doc(db, 'matches', matchID), {
+                balls: match.balls.filter(function(v) {
+                    return !selectedBalls.includes(v);
+                }),
+            });
+            setSelectedBalls([]);
         }
 
         const handlePot = () => {
@@ -220,7 +237,7 @@ export const Admin = () => {
             });
         }
 
-        const WrapperBalls = (props: { solid: boolean }) => {
+        const WrapperBalls = (props: { solid: boolean, player: number }) => {
 
             const select = (v: number) => {
                 setSelectedBalls(prev => {
@@ -234,32 +251,38 @@ export const Admin = () => {
 
             return (
                 <>
-                    {
-                        match.player1balls ?
+                    {match.player1balls ?
+                        <div className="balls">
+                            {match.balls.filter(b => (props.solid ? b < 8 : b > 8)).length === 0 ?
+                                <Ball type="pool" color="black" value={8} onClick={() => select(8)} potted={!match.balls.includes(8)} selected={props.player === match.player && selectedBalls.includes(8)} />
+                                :
+                                <>
+                                    {Array.from({ length: 7 }).map((_, idx) => idx + (props.solid ? 1 : 9)).map((v, idx) => (
+                                        <Ball type="pool" value={v} color={match.colors[idx]} potted={!match.balls.includes(v)} selected={selectedBalls.includes(v)}
+                                            onClick={() => select(v)}
+                                        />
+                                    ))}
+                                </>
+                            }
+                        </div>
+                        :
+                        match.player === props.player &&
+                        <>
                             <div className="balls">
-                                {Array.from({ length: 7 }).map((_, idx) => idx + (props.solid ? 1 : 9)).map((v, idx) => (
+                                {Array.from({ length: 7 }).map((_, idx) => idx + 1).map((v, idx) => (
                                     <Ball type="pool" value={v} color={match.colors[idx]} potted={!match.balls.includes(v)} selected={selectedBalls.includes(v)}
                                         onClick={() => select(v)}
                                     />
                                 ))}
                             </div>
-                            :
-                            <>
-                                <div className="balls">
-                                    {Array.from({ length: 7 }).map((_, idx) => idx + 1).map((v, idx) => (
-                                        <Ball type="pool" value={v} color={match.colors[idx]} potted={!match.balls.includes(v)} selected={selectedBalls.includes(v)}
-                                            onClick={() => select(v)}
-                                        />
-                                    ))}
-                                </div>
-                                <div className="balls">
-                                    {Array.from({ length: 7 }).map((_, idx) => idx + 9).map((v, idx) => (
-                                        <Ball type="pool" value={v} color={match.colors[idx]} potted={!match.balls.includes(v)} selected={selectedBalls.includes(v)}
-                                            onClick={() => select(v)}
-                                        />
-                                    ))}
-                                </div>
-                            </>
+                            <div className="balls">
+                                {Array.from({ length: 7 }).map((_, idx) => idx + 9).map((v, idx) => (
+                                    <Ball type="pool" value={v} color={match.colors[idx]} potted={!match.balls.includes(v)} selected={selectedBalls.includes(v)}
+                                        onClick={() => select(v)}
+                                    />
+                                ))}
+                            </div>
+                        </>
                     }
                 </>
             )
@@ -269,7 +292,6 @@ export const Admin = () => {
             <div className="maincontainer">
                 <div className="match-properties">
                     <div className="row">
-                        <button onClick={decreaseScore1}>-</button>
                         <div className="wrapper">
                             <div
                                 onClick={() => changePlayer(1)}
@@ -284,15 +306,11 @@ export const Admin = () => {
                                     {Array.from({ length: match.foulsToLose }).map((_, idx) => <div className={`foul-bar ${idx < match.fouls1 ? 'foul' : 'no-foul'}`} />)}
                                 </div>
                             </div>
-                            {match.player === 1 &&
-                                <WrapperBalls solid={match.player1balls === 'solids'} />
-                            }
+                            <WrapperBalls player={1} solid={match.player1balls === 'solids'} />
                         </div>
-                        <button onClick={increaseScore1}>+</button>
                     </div>
 
                     <div className="row">
-                        <button onClick={decreaseScore2}>-</button>
                         <div className="wrapper">
                             <div
                                 onClick={() => changePlayer(2)}
@@ -307,72 +325,64 @@ export const Admin = () => {
                                     {Array.from({ length: match.foulsToLose }).map((_, idx) => <div className={`foul-bar ${idx < match.fouls2 ? 'foul' : 'no-foul'}`} />)}
                                 </div>
                             </div>
-                            {match.player === 2 &&
-                                <WrapperBalls solid={match.player1balls !== 'solids'} />
-                            }
+                            <WrapperBalls player={2} solid={match.player1balls !== 'solids'} />
                         </div>
-                        <button onClick={increaseScore2}>+</button>
                     </div>
 
                     <div className="row">
+                        {match.player !== 0 && match.balls.length === 15 &&
+                            <button disabled={selectedBalls.length === 0} onClick={handlePotFromStart}>Belökés kezdésből</button>
+                        }
+                        <button disabled={match.player === 0} onClick={selectedBalls.length > 0 ? handlePot : endBreak}>{selectedBalls.length > 0 ? 'Belökés' : 'Break vége'}</button>
+                    </div>
+                    <div className="row">
                         <button onClick={decreaseRaceTo}>-</button>
-                        <div className="property">
-                            Race to
-                            <div className="score">
-                                {match?.raceTo}
+                        <div className="wrapper">
+                            <div className="property">
+                                Race to
+                                <div className="score">
+                                    {match?.raceTo}
+                                </div>
                             </div>
                         </div>
                         <button onClick={increaseRaceTo}>+</button>
                     </div>
                     <div className="row">
                         <button onClick={decreaseFoulsToLose}>-</button>
-                        <div className="property">
-                            Fouls to lose
-                            <div className="score">
-                                {match?.foulsToLose}
+                        <div className="wrapper">
+                            <div className="property">
+                                Fouls to lose
+                                <div className="score">
+                                    {match?.foulsToLose}
+                                </div>
                             </div>
                         </div>
                         <button onClick={increaseFoulsToLose}>+</button>
                     </div>
                 </div>
-                {/* <div className="row"> */}
-                {/*     <div className="adminballs"> */}
-                {/*         {Array.from({ length: 15 }).map((_, idx) => idx + 1).map((v, idx) => ( */}
-                {/*             <Ball */}
-                {/*                 key={idx} */}
-                {/*                 type="pool" */}
-                {/*                 value={v} */}
-                {/*                 color={match?.colors[idx % 8]} */}
-                {/*                 onClick={() => { */}
-                {/*                     if (match.player !== 0 && match.balls.includes(v) && !selectedBalls.includes(v)) { */}
-                {/*                         setSelectedBalls(prev => { */}
-                {/*                             let tmp = [...prev]; */}
-                {/*                             tmp.push(v); */}
-                {/*                             return tmp; */}
-                {/*                         }); */}
-                {/*                     } else { */}
-                {/*                         setSelectedBalls(prev => { */}
-                {/*                             return prev.filter(t => t !== v); */}
-                {/*                         }) */}
-                {/*                     } */}
-                {/*                 }} */}
-                {/*                 selected={selectedBalls.includes(v)} */}
-                {/*                 potted={!match.balls.includes(v)} */}
-                {/*             /> */}
-                {/*         ))} */}
-                {/*     </div> */}
-                {/* </div> */}
-                <div className="row">
-                    {match.player !== 0 &&
-                        <>
-                            <button onClick={selectedBalls.length > 0 ? handlePot : endBreak}>{selectedBalls.length > 0 ? 'belokes' : 'break vege'}</button>
-                            <button onClick={match.player === 1 ? increaseFouls1 : increaseFouls2}>hiba</button>
-                        </>
-                    }
-                    <button onClick={newFrame}>uj frame</button>
+                <div className={`row ${match.player === 0 ? 'disabled' : ''}`}>
+                    <button onClick={match.player === 1 ? decreaseFouls1 : match.player === 2 ? decreaseFouls2 : undefined}>-</button>
+                    <div className="wrapper">
+                        <div className="property">
+                            Hiba
+                        </div>
+                    </div>
+                    <button onClick={match.player === 1 ? increaseFouls1 : match.player === 2 ? increaseFouls2 : undefined}>+</button>
+                </div>
+                <div className={`row ${match.player === 0 ? 'disabled' : ''}`}>
+                    <button onClick={match.player === 1 ? decreaseScore1 : match.player === 2 ? decreaseScore2 : undefined}>-</button>
+                    <div className="wrapper">
+                        <div className="property">
+                            Pont
+                        </div>
+                    </div>
+                    <button onClick={match.player === 1 ? increaseScore1 : match.player === 2 ? increaseScore2 : undefined}>+</button>
                 </div>
                 <div className="row">
-                    <button onClick={toggleOverlay}>overlay {match.overlayHidden ? 'mutatasa' : 'eltuntetese'}</button>
+                    <button onClick={newFrame}>Új frame</button>
+                </div>
+                <div className="row">
+                    <button onClick={toggleOverlay}>Overlay {match.overlayHidden ? 'mutatása' : 'eltüntetése'}</button>
                 </div>
             </div>
         );

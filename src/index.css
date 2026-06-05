@@ -226,11 +226,8 @@
     transition: 0.3s;
 }
 
-.adminballs .ball {
-    width: 55px;
-}
-
 .ball.selected {
+    /* box-shadow: 0 0 15px 0 ; */
     scale: 1.3;
 }
 
@@ -275,11 +272,12 @@
     background-color: rgba(220, 220, 220);
     border-radius: 10px;
     width: 500%;
-    overflow: hidden;
+    /* container-type: size; */
 }
 
 
 .wrapper .balls:last-child {
+    /* height: 200cqh; */
     margin-bottom: 5px;
 }
 
@@ -293,12 +291,12 @@
 
 .wrapper .balls {
     margin-inline: 5px;
-    gap: 5px;
 }
 
 .wrapper .balls .ball {
-    width: 100%;
-    font-size: 8px;
+    width: calc(100% / 7 - 5px);
+    margin: auto;
+    /* font-size: 8px; */
 }
 
 .row .property {
@@ -314,6 +312,10 @@
     background-color: blue;
     border-radius: 10px;
     color: white;
+}
+
+.row .property:not(:has(.score)) {
+    justify-content: center;
 }
 
 .property .ball {
@@ -398,13 +400,22 @@
     align-items: center;
 }
 
+.row.disabled {
+    opacity: 0.3;
+}
+
 button {
+    color: blue;
     font-weight: 600;
     min-width: 40px;
     height: 50px;
     font-size: 15px;
     border: none;
     border-radius: 10px;
+}
+
+button:disabled {
+    opacity: 0.3;
 }
 
 .match-container {
