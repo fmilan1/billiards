@@ -54,9 +54,14 @@ export const Admin = () => {
         setPlayer2name(m?.player2);
     }, [matchID, matches]);
 
+    useEffect(() => {
+        const mID = searchParams.get('matchID');
+        if (mID) setMatchID(mID);
+        else setMatchID('');
+    }, [searchParams]);
+
 
     if (matchID && match) {
-
 
         const increaseScore1 = () => {
             const newScore = match.score1 + 1;
